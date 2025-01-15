@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ page.title }}</title>
+  <title>Googly Eyes with Face API</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -32,28 +32,21 @@
 </head>
 <body>
 
-  <h1>{{ page.title }}</h1>
+  <h1>Put Googly Eyes on Your Picture!</h1>
   <input type="file" id="upload" accept="image/*">
   <canvas id="canvas"></canvas>
   <button id="googly-eyes">Add Googly Eyes</button>
 
-  <!-- Include face-api.js -->
-  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
-
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script> <!-- Load face-api.js -->
+  
   <script>
-    const eyeRadius = {{ page.eye_radius }};
-    const eyeOffset = {{ page.eye_offset }};
-    const pupilRadius = {{ page.pupil_radius }};
-    const googlyEyeColor = "{{ page.googly_eye_color }}";
-    const pupilColor = "{{ page.pupil_color }}";
-
     const uploadInput = document.getElementById('upload');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const googlyEyesButton = document.getElementById('googly-eyes');
     let img = new Image();
 
-    // Load the face-api.js models
+    // Load face-api.js models
     async function loadFaceApiModels() {
       await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
       await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
@@ -72,20 +65,18 @@
       }
     });
 
-    img.onload = function() {
+    img.onload = async function() {
       canvas.width = img.width;
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
-      detectFaceAndAddGooglyEyes();
+      await detectFaceAndAddGooglyEyes();
     };
 
+    // Detect face and landmarks using face-api.js
     async function detectFaceAndAddGooglyEyes() {
-      // Detect faces
       const detections = await faceapi.detectAllFaces(img).withFaceLandmarks();
       if (detections.length > 0) {
         const landmarks = detections[0].landmarks;
-
-        // Get the eyes' coordinates (left and right eye)
         const leftEye = landmarks.getLeftEye();
         const rightEye = landmarks.getRightEye();
 
@@ -100,22 +91,27 @@
     }
 
     function drawGooglyEye(position) {
+      // Parameters for googly eyes
+      const eyeRadius = 20;
+      const eyeOffset = 10;
+      const pupilRadius = 8;
+
       // Draw white part of the googly eye
       ctx.beginPath();
       ctx.arc(position.x, position.y, eyeRadius, 0, Math.PI * 2);
-      ctx.fillStyle = googlyEyeColor;
+      ctx.fillStyle = 'white';
       ctx.fill();
       ctx.stroke();
 
       // Draw pupil
       ctx.beginPath();
       ctx.arc(position.x + eyeOffset, position.y, pupilRadius, 0, Math.PI * 2);
-      ctx.fillStyle = pupilColor;
+      ctx.fillStyle = 'black';
       ctx.fill();
       ctx.stroke();
     }
 
-    // When the button is clicked, process the image
+    // When the button is clicked, apply googly eyes
     googlyEyesButton.addEventListener('click', function() {
       ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
       ctx.drawImage(img, 0, 0); // Redraw the image
@@ -125,6 +121,5 @@
     // Initialize face-api.js and load models
     loadFaceApiModels();
   </script>
-
 </body>
 </html>
