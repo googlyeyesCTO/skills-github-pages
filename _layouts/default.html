@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    canvas {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+    }
+    input[type="file"] {
+      margin-top: 20px;
+    }
+    #googly-eyes {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #googly-eyes:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>{{ page.title }}</h1>
+  <input type="file" id="upload" accept="image/*">
+  <canvas id="canvas"></canvas>
+  <button id="googly-eyes">Add Googly Eyes</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/p5.js"></script>
+  <script>
+    const eyeRadius = {{ page.eye_radius }};
+    const eyeOffset = {{ page.eye_offset }};
+    const eyeColor = "{{ page.eye_color }}";
+    const pupilColor = "{{ page.pupil_color }}";
+
+    const uploadInput = document.getElementById('upload');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const googlyEyesButton = document.getElementById('googly-eyes');
+    let img = new Image();
+
+    // Handle image upload
+    uploadInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Draw the image on canvas
+    img.onload = function() {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+    };
+
+    // Add googly eyes on image
+    googlyEyesButton.addEventListener('click', function() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      // Positions for the eyes (can be dynamically adjusted)
+      const positions = [
+        { x: img.width / 3, y: img.height / 3 },  // Left eye
+        { x: 2 * img.width / 3, y: img.height / 3 } // Right eye
+      ];
+
+      // Draw the eyes
+      positions.forEach((pos) => {
+        // Outer part (white eye)
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, eyeRadius, 0, Math.PI * 2);
+        ctx.fillStyle = eyeColor;
+        ctx.fill();
+        ctx.stroke();
+
+        // Inner part (pupil)
+        ctx.beginPath();
+        ctx.arc(pos.x + eyeOffset, pos.y, eyeRadius / 2, 0, Math.PI * 2);
+        ctx.fillStyle = pupilColor;
+        ctx.fill();
+        ctx.stroke();
+      });
+    });
+  </script>
+
+</body>
+</html>
